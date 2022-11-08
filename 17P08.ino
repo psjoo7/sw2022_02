@@ -27,7 +27,7 @@ void setup()
   myservo.writeMicroseconds(_DUTY_NEU);
   pinMode(PIN_LED, OUTPUT);
   dist_prev = _DIST_MIN;
-  
+  digitalWrite(PIN_LED, LOW); //LED OFF
   Serial.begin(2000000);
 }
 
@@ -36,7 +36,7 @@ void loop()
   unsigned long time_curr = millis();
   int a_value, duty;
   float dist;
-  digitalWrite(PIN_LED, 1); //LED OFF
+  
   
   // wait until next event time
   if (time_curr < (last_loop_time + LOOP_INTERVAL))
@@ -54,16 +54,14 @@ void loop()
 
   if(dist < _DIST_MIN){
     dist = dist_prev;
-    digitalWrite(PIN_LED, 1); // LED off
+    digitalWrite(PIN_LED, HIGH); // LED off
   }else if (dist > _DIST_MAX) {
     dist = dist_prev;
-    digitalWrite(PIN_LED, 1); // LED off
+    digitalWrite(PIN_LED, HIGH); // LED off
   }else{
-    digitalWrite(PIN_LED, 0); // LED on
+    digitalWrite(PIN_LED, LOW); // LED on
     dist_prev = dist;
   }
-
-  dist_ema = _EMA_ALPHA * dist + (1 - _EMA_ALPHA) * dist_prev;
   
   // map distance into duty
   if(dist_ema < _DIST_MIN){
@@ -77,14 +75,15 @@ void loop()
     myservo.writeMicroseconds(duty);
   }
   
+  dist_ema = _EMA_ALPHA * dist + (1 - _EMA_ALPHA) * dist_prev;
+  
   // 시리얼 플로터 
-  Serial.print("MIN : "); Serial.print(_DIST_MIN);
-  Serial.print(" ,IR: " ); Serial.print(a_value);
-  Serial.print(" ,dist: "); Serial.print(dist);
-  Serial.print(" ,ema: "); Serial.print(dist_ema);
-  Serial.print(" ,servo: "); Serial.print(duty);
-  Serial.print(" ,MAX: "); Serial.print(_DIST_MAX);
+  Serial.print("MIN:"); Serial.print(_DIST_MIN);
+  Serial.print(",IR:"); Serial.print(a_value);
+  Serial.print(",dist:"); Serial.print(dist);
+  Serial.print(",ema:"); Serial.print(dist_ema);
+  Serial.print(",servo:"); Serial.print(duty);
+  Serial.print(",MAX:"); Serial.print(_DIST_MAX);
   Serial.println("");
 
-  dist_prev = dist_ema;
 }
